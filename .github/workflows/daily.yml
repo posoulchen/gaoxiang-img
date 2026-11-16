@@ -1,0 +1,48 @@
+name: gaoxiang-daily
+
+on:
+  schedule:
+    # 23:20 UTC = 07:20 北京时间（电脑端 07:00 发过就跳过）
+    - cron: "20 23 * * *"
+  workflow_dispatch:
+    inputs:
+      day:
+        description: "指定第几天（留空 = 按日期）"
+        required: false
+      dry_run:
+        description: "true = 只打印不发送"
+        required: false
+        default: "false"
+      ping:
+        description: "true = 只发一条连通性测试"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Show time
+        run: |
+          echo "UTC : $(date -u +'%Y-%m-%d %H:%M:%S')"
+          echo "CST : $(TZ=Asia/Shanghai date +'%Y-%m-%d %H:%M:%S')"
+
+      - name: Send
+        env:
+          DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
+          DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}
+          GITHUB_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          DAY_OVERRIDE: ${{ inputs.day }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          PING: ${{ inputs.ping }}
+        run: python scripts/cloud_send.py
