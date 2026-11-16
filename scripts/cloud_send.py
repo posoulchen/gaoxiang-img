@@ -203,7 +203,9 @@ def main() -> int:
     title, text = build_message(n, plan)
     chunks = split_text(text, 11000)
     if os.environ.get("DRY_RUN") == "true":
-        log(f"DRY-RUN day={n} chars={len(text)} chunks={len(chunks)} title={title}")
+        mp = (ROOT / "img" / f"day-{n:03d}-map.png").exists()
+        mm = (ROOT / "img" / f"day-{n:03d}-memo.png").exists()
+        log(f"DRY-RUN day={n} chars={len(text)} chunks={len(chunks)} title={title} map={mp} memo={mm}")
         log(text[:400])
         return 0
 
